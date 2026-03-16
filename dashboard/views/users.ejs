@@ -1,0 +1,167 @@
+<!-- dashboard/views/users.ejs - NEW USER MANAGEMENT PAGE -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'users' }) %>
+
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="font-size: 36px; font-weight: 800;">
+            <span class="gradient-text">User Management</span>
+        </h1>
+        <div class="glass-morphism" style="padding: 10px 20px; border-radius: 30px;">
+            <i class="fas fa-users" style="color: #00ff88; margin-right: 10px;"></i>
+            <%= allowedUsers.length %> Authorized Users
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px;">
+        <!-- Add User Form -->
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user-plus" style="color: #00ff88;"></i>
+                Add New User
+            </h3>
+            
+            <form method="POST" action="/users/add">
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                        <i class="fab fa-discord" style="color: #00ff88; margin-right: 8px;"></i>
+                        Discord User ID
+                    </label>
+                    <input type="text" name="userId" class="futuristic-input" placeholder="123456789012345678" required pattern="[0-9]{17,19}" title="Enter a valid Discord ID (17-19 digits)">
+                    <p style="color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> 
+                        Right-click user in Discord → Copy ID (Developer Mode must be enabled)
+                    </p>
+                </div>
+                
+                <button type="submit" class="neon-btn" style="width: 100%; padding: 15px;">
+                    <i class="fas fa-plus-circle"></i> Add User
+                </button>
+            </form>
+            
+            <div style="margin-top: 25px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                
+            </div>
+        </div>
+        
+        <!-- Users List -->
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-list" style="color: #00ff88;"></i>
+                Authorized Users
+            </h3>
+            
+            <% if (allowedUsers.length === 0) { %>
+                <div style="text-align: center; padding: 50px 20px; background: rgba(255,255,255,0.02); border-radius: 16px;">
+                    <i class="fas fa-user-slash" style="font-size: 50px; color: rgba(255,255,255,0.1); margin-bottom: 15px;"></i>
+                    <p style="color: rgba(255,255,255,0.3);">No users added yet</p>
+                    <p style="color: rgba(255,255,255,0.2); font-size: 12px;">Add a user ID to get started</p>
+                </div>
+            <% } else { %>
+                <div style="display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; padding-right: 5px;" class="users-scroll">
+                    <% allowedUsers.forEach(userId => { %>
+                        <div class="user-card" style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(0,255,136,0.1);">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #00ff88, #00ccff); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user" style="color: #000;"></i>
+                                </div>
+                                <div>
+                                    <p style="font-weight: 600; font-size: 16px;"><%= userId %></p>
+                                    <p style="color: #00ff88; font-size: 11px;">
+                                        <i class="fas fa-check-circle"></i> Authorized
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <form method="POST" action="/users/remove" onsubmit="return confirm('Remove this user?');">
+                                <input type="hidden" name="userId" value="<%= userId %>">
+                                <button type="submit" style="background: none; border: none; color: #ff6b6b; font-size: 20px; cursor: pointer; padding: 10px;">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
+                            </form>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    
+    <!-- Environment Info -->
+    <div class="modern-card" style="margin-top: 25px;">
+        <h3 style="font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-code-branch" style="color: #00ff88;"></i>
+            System Information
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <p style="color: rgba(255,255,255,0.5); font-size: 12px;">ENV Allowed Users</p>
+                <p style="font-size: 16px; font-weight: 600;">
+                    <%= process.env.ALLOWED_USERS ? process.env.ALLOWED_USERS.split(',').length : 0 %> users
+                </p>
+            </div>
+            <div>
+                <p style="color: rgba(255,255,255,0.5); font-size: 12px;">Config Allowed Users</p>
+                <p style="font-size: 16px; font-weight: 600;"><%= allowedUsers.length %> users</p>
+            </div>
+            <div>
+                <p style="color: rgba(255,255,255,0.5); font-size: 12px;">Total Authorized</p>
+                <p style="font-size: 16px; font-weight: 600; color: #00ff88;">
+                    <%= (process.env.ALLOWED_USERS ? process.env.ALLOWED_USERS.split(',').length : 0) + allowedUsers.length %> users
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .users-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #00ff88 rgba(0, 255, 136, 0.1);
+    }
+    
+    .users-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .users-scroll::-webkit-scrollbar-track {
+        background: rgba(0, 255, 136, 0.05);
+        border-radius: 10px;
+    }
+    
+    .users-scroll::-webkit-scrollbar-thumb {
+        background: #00ff88;
+        border-radius: 10px;
+    }
+    
+    .user-card {
+        transition: all 0.3s;
+    }
+    
+    .user-card:hover {
+        background: rgba(0, 255, 136, 0.1) !important;
+        transform: translateX(5px);
+        border-color: #00ff88 !important;
+    }
+</style>
+
+<script>
+function quickAction(action) {
+    switch(action) {
+        case 'refresh':
+            location.reload();
+            break;
+        case 'restart':
+            if(confirm('Restart bot? This may take a few seconds.')) {
+                alert('Restart feature coming soon!');
+            }
+            break;
+        case 'clear':
+            if(confirm('Clear cache?')) {
+                alert('Cache cleared!');
+            }
+            break;
+    }
+}
+</script>
+
+<%- include('partials/footer') %>

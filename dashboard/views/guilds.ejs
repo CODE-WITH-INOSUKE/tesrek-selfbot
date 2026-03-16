@@ -1,0 +1,588 @@
+<!-- dashboard/views/guilds.ejs - Fixed server icon positioning -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'guilds', allowedUsers: allowedUsers }) %>
+
+<style>
+    /* Guild card styles */
+    .guild-card {
+        background: rgba(255,255,255,0.05);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s;
+        border: 1px solid rgba(0,255,136,0.1);
+        position: relative;
+    }
+    
+    .guild-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,255,136,0.2);
+        border-color: #00ff88;
+    }
+    
+    .guild-banner {
+        height: 100px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .guild-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .guild-icon-container {
+        position: relative;
+        height: 60px; /* Space for icon overlap */
+        margin-bottom: 10px;
+    }
+    
+    .guild-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid #00ff88;
+        position: absolute;
+        top: -40px; /* Pull icon up to overlap banner */
+        left: 20px;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px rgba(0,255,136,0.3);
+        z-index: 2;
+    }
+    
+    .guild-icon img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .guild-content {
+        padding: 0 20px 20px 20px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .stat-item {
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid rgba(0,255,136,0.1);
+    }
+    
+    .stat-item:hover {
+        background: rgba(0,255,136,0.1);
+        border-color: #00ff88;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #00ff88;
+    }
+    
+    .stat-label {
+        font-size: 11px;
+        color: rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .view-btn {
+        background: rgba(0,255,136,0.1);
+        color: #00ff88;
+        border: 1px solid #00ff88;
+    }
+    
+    .view-btn:hover {
+        background: #00ff88;
+        color: #000;
+    }
+    
+    .leave-btn {
+        background: rgba(255,107,107,0.1);
+        color: #ff6b6b;
+        border: 1px solid #ff6b6b;
+    }
+    
+    .leave-btn:hover {
+        background: #ff6b6b;
+        color: #fff;
+    }
+    
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 20px;
+        border: 2px solid #00ff88;
+        padding: 25px;
+        position: relative;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .guild-detail-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .guild-detail-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid #00ff88;
+        object-fit: cover;
+    }
+    
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .detail-item {
+        background: rgba(255,255,255,0.03);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid rgba(0,255,136,0.1);
+    }
+    
+    .detail-label {
+        font-size: 12px;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #00ff88;
+        word-break: break-all;
+    }
+    
+    .channel-list {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 10px;
+        padding-right: 5px;
+    }
+    
+    .channel-item {
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 6px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+    }
+    
+    .channel-item i {
+        color: #00ff88;
+        width: 20px;
+    }
+    
+    .role-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        background: rgba(0,255,136,0.1);
+        border-radius: 12px;
+        font-size: 11px;
+        margin: 2px;
+        border: 1px solid rgba(0,255,136,0.3);
+    }
+</style>
+
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="font-size: 36px; font-weight: 800;">
+            <span class="gradient-text">Guild Management</span>
+        </h1>
+        <div class="glass-morphism" style="padding: 10px 20px; border-radius: 30px;">
+            <i class="fas fa-server" style="color: #00ff88; margin-right: 10px;"></i>
+            <%= guilds.length %> Servers
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;">
+        <% if (guilds.length === 0) { %>
+            <div class="modern-card" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                <i class="fas fa-server" style="font-size: 80px; color: rgba(255,255,255,0.1); margin-bottom: 20px;"></i>
+                <h3 style="color: rgba(255,255,255,0.5);">No guilds found</h3>
+                <p style="color: rgba(255,255,255,0.3);">The selfbot is not in any Discord servers</p>
+            </div>
+        <% } %>
+
+        <% guilds.forEach(guild => { %>
+        <div class="guild-card">
+            <!-- Guild Banner -->
+            <div class="guild-banner">
+                <% if (guild.banner) { %>
+                <img src="<%= guild.banner %>" alt="<%= guild.name %> banner">
+                <% } %>
+            </div>
+            
+            <!-- Icon Container - Fixed positioning -->
+            <div class="guild-icon-container">
+                <div class="guild-icon">
+                    <% if (guild.icon) { %>
+                    <img src="<%= guild.icon %>" alt="<%= guild.name %> icon">
+                    <% } else { %>
+                    <i class="fas fa-server" style="font-size: 40px; color: #000;"></i>
+                    <% } %>
+                </div>
+            </div>
+            
+            <!-- Guild Content -->
+            <div class="guild-content">
+                <h3 style="font-size: 20px; margin-bottom: 5px;"><%= guild.name %></h3>
+                <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 15px;">ID: <%= guild.id %></p>
+                
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value"><%= guild.memberCount %></div>
+                        <div class="stat-label">Members</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%= guild.channelCount %></div>
+                        <div class="stat-label">Channels</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%= guild.roleCount %></div>
+                        <div class="stat-label">Roles</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%= guild.verificationLevel %></div>
+                        <div class="stat-label">Verification</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn view-btn" onclick="viewGuildDetails('<%= guild.id %>')">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="action-btn leave-btn" onclick="leaveGuild('<%= guild.id %>', '<%= guild.name %>')">
+                        <i class="fas fa-sign-out-alt"></i> Leave
+                    </button>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+</div>
+
+<!-- Guild Details Modal -->
+<div id="guildModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        
+        <div id="modalContent">
+            <div style="text-align: center;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #00ff88;"></i>
+                <p>Loading guild details...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentGuildId = null;
+
+async function viewGuildDetails(guildId) {
+    currentGuildId = guildId;
+    const modal = document.getElementById('guildModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    modal.classList.add('active');
+    modalContent.innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #00ff88;"></i><p>Loading guild details...</p></div>';
+    
+    try {
+        // Fetch guild details from API
+        const response = await fetch(`/api/guilds/${guildId}/details`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayGuildDetails(data);
+        } else {
+            modalContent.innerHTML = `<div style="color: #ff6b6b; text-align: center;"><i class="fas fa-exclamation-circle" style="font-size: 40px;"></i><p>Error: ${data.error}</p></div>`;
+        }
+    } catch (error) {
+        modalContent.innerHTML = `<div style="color: #ff6b6b; text-align: center;"><i class="fas fa-exclamation-circle" style="font-size: 40px;"></i><p>Failed to load guild details</p></div>`;
+    }
+}
+
+function displayGuildDetails(data) {
+    const guild = data.guild;
+    const channels = data.channels || [];
+    const roles = data.roles || [];
+    const members = data.members || [];
+    const emojis = data.emojis || [];
+    
+    const textChannels = channels.filter(c => c.type === 'GUILD_TEXT' || c.type === 0);
+    const voiceChannels = channels.filter(c => c.type === 'GUILD_VOICE' || c.type === 2);
+    const categoryChannels = channels.filter(c => c.type === 'GUILD_CATEGORY' || c.type === 4);
+    
+    let html = `
+        <div class="guild-detail-header">
+            <img src="${guild.icon || 'https://via.placeholder.com/80'}" class="guild-detail-icon" onerror="this.src='https://via.placeholder.com/80'">
+            <div>
+                <h2 style="font-size: 24px; margin-bottom: 5px;">${guild.name}</h2>
+                <p style="color: rgba(255,255,255,0.5);">ID: ${guild.id}</p>
+            </div>
+        </div>
+        
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Owner ID</div>
+                <div class="detail-value">${guild.ownerId}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Created</div>
+                <div class="detail-value">${new Date(guild.createdAt).toLocaleDateString()}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Members</div>
+                <div class="detail-value">${members.length}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Channels</div>
+                <div class="detail-value">${channels.length}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Roles</div>
+                <div class="detail-value">${roles.length}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Emojis</div>
+                <div class="detail-value">${emojis.length}</div>
+            </div>
+        </div>
+        
+        <h3 style="margin: 20px 0 10px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-hashtag" style="color: #00ff88;"></i> Text Channels (${textChannels.length})
+        </h3>
+    `;
+    
+    if (textChannels.length > 0) {
+        html += `<div class="channel-list">`;
+        textChannels.slice(0, 10).forEach(channel => {
+            html += `<div class="channel-item"><i class="fas fa-hashtag"></i> ${channel.name} (${channel.id})</div>`;
+        });
+        if (textChannels.length > 10) {
+            html += `<div style="color: rgba(255,255,255,0.3); text-align: center; margin-top: 5px;">+${textChannels.length - 10} more text channels</div>`;
+        }
+        html += `</div>`;
+    }
+    
+    if (voiceChannels.length > 0) {
+        html += `<h3 style="margin: 20px 0 10px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-volume-up" style="color: #00ff88;"></i> Voice Channels (${voiceChannels.length})
+        </h3>`;
+        html += `<div class="channel-list">`;
+        voiceChannels.slice(0, 5).forEach(channel => {
+            html += `<div class="channel-item"><i class="fas fa-volume-up"></i> ${channel.name} (${channel.userCount || 0} users)</div>`;
+        });
+        if (voiceChannels.length > 5) {
+            html += `<div style="color: rgba(255,255,255,0.3); text-align: center; margin-top: 5px;">+${voiceChannels.length - 5} more voice channels</div>`;
+        }
+        html += `</div>`;
+    }
+    
+    html += `<h3 style="margin: 20px 0 10px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-tags" style="color: #00ff88;"></i> Roles (${roles.length})
+    </h3>`;
+    html += `<div class="channel-list" style="max-height: 150px;">`;
+    roles.slice(0, 20).forEach(role => {
+        if (role.name !== '@everyone') {
+            html += `<span class="role-badge" style="${role.color ? `border-color: #${role.color.toString(16)}; color: #${role.color.toString(16)};` : ''}">${role.name}</span>`;
+        }
+    });
+    if (roles.length > 20) {
+        html += `<span class="role-badge">+${roles.length - 20} more</span>`;
+    }
+    html += `</div>`;
+    
+    html += `
+        <div style="margin-top: 25px; display: flex; gap: 10px;">
+            <button class="neon-btn" style="flex: 1;" onclick="copyToClipboard('${guild.id}')">
+                <i class="fas fa-copy"></i> Copy ID
+            </button>
+            <button class="neon-btn" style="flex: 1; background: transparent; border-color: #ff6b6b; color: #ff6b6b;" onclick="leaveGuild('${guild.id}', '${guild.name}')">
+                <i class="fas fa-sign-out-alt"></i> Leave Server
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('modalContent').innerHTML = html;
+}
+
+async function leaveGuild(guildId, guildName) {
+    if (!confirm(`Are you sure you want to leave "${guildName}"?`)) {
+        closeModal();
+        return;
+    }
+    
+    const modal = document.getElementById('guildModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #00ff88;"></i><p>Leaving server...</p></div>';
+    
+    try {
+        const response = await fetch('/api/guilds/leave', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guildId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            modalContent.innerHTML = `
+                <div style="text-align: center; color: #00ff88;">
+                    <i class="fas fa-check-circle" style="font-size: 60px; margin-bottom: 20px;"></i>
+                    <h3>Successfully left ${guildName}</h3>
+                    <button class="neon-btn" style="margin-top: 20px;" onclick="location.reload()">Refresh Page</button>
+                </div>
+            `;
+            
+            // Auto refresh after 2 seconds
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            modalContent.innerHTML = `
+                <div style="text-align: center; color: #ff6b6b;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 60px; margin-bottom: 20px;"></i>
+                    <h3>Failed to leave server</h3>
+                    <p>${data.error || 'Unknown error'}</p>
+                    <button class="neon-btn" style="margin-top: 20px;" onclick="closeModal()">Close</button>
+                </div>
+            `;
+        }
+    } catch (error) {
+        modalContent.innerHTML = `
+            <div style="text-align: center; color: #ff6b6b;">
+                <i class="fas fa-exclamation-circle" style="font-size: 60px; margin-bottom: 20px;"></i>
+                <h3>Error</h3>
+                <p>Failed to leave server</p>
+                <button class="neon-btn" style="margin-top: 20px;" onclick="closeModal()">Close</button>
+            </div>
+        `;
+    }
+}
+
+function closeModal() {
+    document.getElementById('guildModal').classList.remove('active');
+    currentGuildId = null;
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Copied to clipboard!', 'success');
+    }).catch(() => {
+        showNotification('Failed to copy', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        background: ${type === 'success' ? 'rgba(0,255,136,0.2)' : 'rgba(255,107,107,0.2)'};
+        border: 2px solid ${type === 'success' ? '#00ff88' : '#ff6b6b'};
+        border-radius: 10px;
+        color: ${type === 'success' ? '#00ff88' : '#ff6b6b'};
+        z-index: 1001;
+        backdrop-filter: blur(10px);
+        font-weight: 500;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('guildModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+</script>
+
+<%- include('partials/footer') %>

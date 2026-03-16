@@ -1,0 +1,64 @@
+<!-- dashboard/views/slash-commands.ejs - NEW PAGE -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'slash-commands', allowedUsers: allowedUsers }) %>
+
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="font-size: 36px; font-weight: 800;">
+            <span class="gradient-text">Slash Commands</span>
+        </h1>
+        <div class="glass-morphism" style="padding: 10px 20px; border-radius: 30px;">
+            <i class="fas fa-slash" style="color: #00ff88; margin-right: 10px;"></i>
+            <%= bot.slashCommands.size %> Commands
+        </div>
+    </div>
+
+    <% Object.keys(commands).forEach(category => { %>
+    <div class="modern-card" style="margin-bottom: 30px;">
+        <h3 style="font-size: 24px; margin-bottom: 20px; text-transform: capitalize; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-folder" style="color: #00ff88;"></i>
+            <%= category %> Commands
+        </h3>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                        <th style="padding: 15px; text-align: left;">Command</th>
+                        <th style="padding: 15px; text-align: left;">Description</th>
+                        <th style="padding: 15px; text-align: left;">Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% commands[category].forEach(cmd => { %>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 15px;">
+                            <span style="background: rgba(0,255,136,0.1); color: #00ff88; padding: 5px 10px; border-radius: 5px;">
+                                /<%= cmd.name %>
+                            </span>
+                        </td>
+                        <td style="padding: 15px;"><%= cmd.description %></td>
+                        <td style="padding: 15px;"><code style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 5px;">/<%= cmd.name %></code></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% }) %>
+
+    <div class="modern-card" style="background: rgba(0,255,136,0.05);">
+        <h3 style="font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-info-circle" style="color: #00ff88;"></i>
+            How to use slash commands
+        </h3>
+        <ol style="padding-left: 20px; color: rgba(255,255,255,0.8);">
+            <li style="margin-bottom: 8px;">Invite the bot using the OAuth2 URL with "applications.commands" scope</li>
+            <li style="margin-bottom: 8px;">Type <code style="background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 3px;">/</code> in any channel</li>
+            <li style="margin-bottom: 8px;">Select a command from the list</li>
+            <li style="margin-bottom: 8px;">The selfbot will execute the command and respond</li>
+        </ol>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

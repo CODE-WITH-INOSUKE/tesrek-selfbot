@@ -1,0 +1,40 @@
+<!-- dashboard/views/login.ejs -->
+<%- include('partials/header') %>
+<div style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div class="modern-card" style="width: 400px; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <i class="fas fa-robot" style="font-size: 60px; color: #00ff88; margin-bottom: 20px;"></i>
+            <h2 class="gradient-text" style="font-size: 32px; font-weight: 800;">Welcome Back</h2>
+            <p style="color: rgba(255,255,255,0.6);">Enter your credentials to access the dashboard</p>
+        </div>
+
+        <% if (error) { %>
+            <div style="background: rgba(255,107,107,0.2); border: 1px solid #ff6b6b; border-radius: 12px; padding: 15px; margin-bottom: 20px; color: #ff6b6b; text-align: center;">
+                <i class="fas fa-exclamation-circle"></i> <%= error %>
+            </div>
+        <% } %>
+
+        <form method="POST" action="/login">
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                    <i class="fas fa-user"></i> Username
+                </label>
+                <input type="text" name="username" class="futuristic-input" placeholder="Enter username" required>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input type="password" name="password" class="futuristic-input" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="neon-btn" style="width: 100%; padding: 15px; font-size: 16px;">
+                <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+            </button>
+        </form>
+
+        <div style="margin-top: 30px; text-align: center; color: rgba(255,255,255,0.4); font-size: 12px;">
+            <p>Secure Access • Encrypted Connection</p>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>

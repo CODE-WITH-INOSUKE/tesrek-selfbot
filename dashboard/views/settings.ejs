@@ -1,0 +1,113 @@
+<!-- dashboard/views/settings.ejs - UPDATED WITH BACKGROUND SETTINGS -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'settings' }) %>
+
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="font-size: 36px; font-weight: 800;">
+            <span class="gradient-text">Bot Settings</span>
+        </h1>
+        <div class="glass-morphism" style="padding: 10px 20px; border-radius: 30px;">
+            <i class="fas fa-sliders-h" style="color: #00ff88; margin-right: 10px;"></i>
+            Configuration Panel
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+        <!-- Main Settings -->
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-robot" style="color: #00ff88;"></i>
+                Bot Configuration
+            </h3>
+            
+            <form method="POST" action="/settings">
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                        <i class="fas fa-hashtag" style="color: #00ff88; margin-right: 8px;"></i>
+                        Command Prefix
+                    </label>
+                    <input type="text" name="prefix" class="futuristic-input" value="<%= config.prefix || '!' %>" placeholder="Enter command prefix" style="max-width: 200px;">
+                    <p style="color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Commands will be triggered with this prefix
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                        <i class="fas fa-circle" style="color: #00ff88; margin-right: 8px;"></i>
+                        Status
+                    </label>
+                    <select name="status" class="futuristic-input" style="max-width: 300px;">
+                        <option value="online" style="background: #1a1a1a;" <%= config.status === 'online' ? 'selected' : '' %>>Online (Green)</option>
+                        <option value="idle" style="background: #1a1a1a;" <%= config.status === 'idle' ? 'selected' : '' %>>Idle (Yellow)</option>
+                        <option value="dnd" style="background: #1a1a1a;" <%= config.status === 'dnd' ? 'selected' : '' %>>Do Not Disturb (Red)</option>
+                        <option value="invisible" style="background: #1a1a1a;" <%= config.status === 'invisible' ? 'selected' : '' %>>Invisible (Gray)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                        <i class="fas fa-gamepad" style="color: #00ff88; margin-right: 8px;"></i>
+                        Activity Name
+                    </label>
+                    <input type="text" name="activity" class="futuristic-input" value="<%= config.activity || '' %>" placeholder="e.g., with selfbot" style="max-width: 400px;">
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                        <i class="fas fa-tag" style="color: #00ff88; margin-right: 8px;"></i>
+                        Activity Type
+                    </label>
+                    <select name="activityType" class="futuristic-input" style="max-width: 300px;">
+                        <option value="PLAYING" style="background: #1a1a1a;" <%= config.activityType === 'PLAYING' ? 'selected' : '' %>>Playing</option>
+                        <option value="STREAMING" style="background: #1a1a1a;" <%= config.activityType === 'STREAMING' ? 'selected' : '' %>>Streaming</option>
+                        <option value="LISTENING" style="background: #1a1a1a;" <%= config.activityType === 'LISTENING' ? 'selected' : '' %>>Listening</option>
+                        <option value="WATCHING" style="background: #1a1a1a;" <%= config.activityType === 'WATCHING' ? 'selected' : '' %>>Watching</option>
+                        <option value="COMPETING" style="background: #1a1a1a;" <%= config.activityType === 'COMPETING' ? 'selected' : '' %>>Competing</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="neon-btn" style="padding: 15px 40px; font-size: 16px;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </form>
+        </div>
+
+        <!-- Background Settings -->
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-image" style="color: #00ff88;"></i>
+                Dashboard Background
+            </h3>
+            
+            <form method="POST" action="/settings/background">
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-weight: 500;">
+                        <i class="fas fa-link" style="color: #00ff88; margin-right: 8px;"></i>
+                        Background Image URL
+                    </label>
+                    <input type="url" name="backgroundUrl" class="futuristic-input" value="<%= config.background || '' %>" placeholder="https://example.com/image.jpg">
+                    <p style="color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Leave empty for default gradient
+                    </p>
+                </div>
+                
+                <% if (config.background) { %>
+                <div style="margin-bottom: 25px;">
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 10px;">Preview:</p>
+                    <div style="width: 100%; height: 150px; border-radius: 12px; background-image: url('<%= config.background %>'); background-size: cover; background-position: center; border: 2px solid #00ff88;"></div>
+                </div>
+                <% } %>
+                
+                <button type="submit" class="neon-btn" style="width: 100%;">
+                    <i class="fas fa-save"></i> Update Background
+                </button>
+            </form>
+            
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

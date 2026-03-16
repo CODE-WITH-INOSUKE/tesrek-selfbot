@@ -1,0 +1,59 @@
+<!-- dashboard/views/commands.ejs -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'commands' }) %>
+
+<div>
+    <h1 style="font-size: 36px; font-weight: 800; margin-bottom: 30px;">
+        <span class="gradient-text">Command List</span>
+    </h1>
+
+    <% Object.keys(commands).forEach(category => { %>
+    <div class="modern-card" style="margin-bottom: 30px;">
+        <h3 style="font-size: 24px; margin-bottom: 20px; text-transform: capitalize; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-folder" style="color: #00ff88;"></i>
+            <%= category %> Commands
+        </h3>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                        <th style="padding: 15px; text-align: left;">Command</th>
+                        <th style="padding: 15px; text-align: left;">Aliases</th>
+                        <th style="padding: 15px; text-align: left;">Description</th>
+                        <th style="padding: 15px; text-align: left;">Usage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% commands[category].forEach(cmd => { %>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 15px;">
+                            <span style="background: rgba(0,255,136,0.1); color: #00ff88; padding: 5px 10px; border-radius: 5px;">
+                                <%= cmd.name %>
+                            </span>
+                        </td>
+                        <td style="padding: 15px;">
+                            <% if (cmd.aliases.length > 0) { %>
+                                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                <% cmd.aliases.forEach(alias => { %>
+                                    <span style="background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 5px; font-size: 12px;">
+                                        <%= alias %>
+                                    </span>
+                                <% }) %>
+                                </div>
+                            <% } else { %>
+                                <span style="color: rgba(255,255,255,0.3);">None</span>
+                            <% } %>
+                        </td>
+                        <td style="padding: 15px;"><%= cmd.description %></td>
+                        <td style="padding: 15px;"><code style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 5px;"><%= cmd.usage %></code></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% }) %>
+</div>
+
+<%- include('partials/footer') %>

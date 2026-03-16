@@ -1,0 +1,360 @@
+<!-- dashboard/views/partials/sidebar.ejs - FIXED -->
+<div class="glass-morphism" style="width: 320px; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; border-right: 1px solid rgba(0, 255, 136, 0.2); display: flex; flex-direction: column;">
+    
+    <!-- Fixed Header Section -->
+    <div style="padding: 30px 20px 20px 20px; border-bottom: 1px solid rgba(0, 255, 136, 0.2);">
+        <!-- Logo Area with Animation -->
+        <div style="text-align: center; margin-bottom: 20px; position: relative;">
+            <div class="float-animation" style="display: inline-block;">
+                <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #00ff88, #00ccff); border-radius: 18px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; transform: rotate(45deg);">
+                    <i class="fas fa-robot" style="font-size: 35px; color: #000; transform: rotate(-45deg);"></i>
+                </div>
+            </div>
+            <h2 class="gradient-text" style="font-size: 24px; font-weight: 800; margin-bottom: 3px;">SelfBot</h2>
+            <p style="color: rgba(255,255,255,0.4); font-size: 10px; letter-spacing: 2px;">v2.0.0 • FUTURISTIC</p>
+        </div>
+
+        <!-- Selfbot User Profile Card -->
+        <div class="modern-card" style="padding: 15px; background: rgba(0, 255, 136, 0.1); margin-bottom: 5px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="<%= selfbotUser ? `https://cdn.discordapp.com/avatars/${selfbotUser.id}/${selfbotUser.avatar}.png?size=1024` : 'https://via.placeholder.com/50' %>" 
+                     style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #00ff88; box-shadow: 0 0 15px rgba(0,255,136,0.3);"
+                     onerror="this.src='https://via.placeholder.com/45'">
+                <div>
+                    <p style="font-weight: 700; font-size: 15px;"><%= selfbotUser ? selfbotUser.username : 'Selfbot' %></p>
+                    <p style="color: #00ff88; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-circle" style="font-size: 6px;"></i> Selfbot Account
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot User Profile Card -->
+        <% if (botUser) { %>
+        <div class="modern-card" style="padding: 15px; background: rgba(0, 136, 255, 0.1); margin-top: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="<%= botUser ? `https://cdn.discordapp.com/avatars/${botUser.id}/${botUser.avatar}.png?size=1024` : 'https://via.placeholder.com/50' %>" 
+                     style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #0088ff; box-shadow: 0 0 15px rgba(0,136,255,0.3);"
+                     onerror="this.src='https://via.placeholder.com/45'">
+                <div>
+                    <p style="font-weight: 700; font-size: 15px;"><%= botUser ? botUser.username : 'Bot' %></p>
+                    <p style="color: #0088ff; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-circle" style="font-size: 6px;"></i> Bot Account
+                    </p>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+    
+    <!-- Scrollable Navigation Section -->
+    <div style="flex: 1; overflow-y: auto; padding: 15px 15px 20px 15px;" class="sidebar-scroll">
+        <nav style="display: flex; flex-direction: column; gap: 3px;">
+            <a href="/" class="nav-link <%= currentPage === 'home' ? 'active-nav' : '' %>" data-tooltip="Dashboard Overview">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+                <% if (currentPage === 'home') { %>
+                <span class="active-indicator"></span>
+                <% } %>
+            </a>
+            
+            <a href="/settings" class="nav-link <%= currentPage === 'settings' ? 'active-nav' : '' %>" data-tooltip="Selfbot Configuration">
+                <i class="fas fa-cog"></i>
+                <span>Selfbot Settings</span>
+                <% if (currentPage === 'settings') { %>
+                <span class="active-indicator"></span>
+                <% } %>
+            </a>
+            
+            <a href="/bot-settings" class="nav-link <%= currentPage === 'bot-settings' ? 'active-nav' : '' %>" data-tooltip="Bot Configuration">
+                <i class="fas fa-robot"></i>
+                <span>Bot Settings</span>
+                <% if (currentPage === 'bot-settings') { %>
+                <span class="active-indicator"></span>
+                <% } %>
+            </a>
+            
+            <a href="/users" class="nav-link <%= currentPage === 'users' ? 'active-nav' : '' %>" data-tooltip="User Management">
+                <i class="fas fa-users-cog"></i>
+                <span>Users</span>
+                <% if (typeof allowedUsers !== 'undefined' && allowedUsers && allowedUsers.length > 0) { %>
+                <span class="badge"><%= allowedUsers.length %></span>
+                <% } %>
+            </a>
+            
+            <div style="margin: 15px 0 5px 0; padding-left: 15px;">
+                <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                    <i class="fas fa-database" style="margin-right: 5px; font-size: 8px;"></i> MANAGEMENT
+                </p>
+            </div>
+            <!-- Add this in the navigation section after Statistics or before Quick Actions -->
+<a href="/music" class="nav-link <%= currentPage === 'music' ? 'active-nav' : '' %>" data-tooltip="Music Player">
+    <i class="fas fa-headphones-alt"></i>
+    <span>Music Player</span>
+    <% if (currentPage === 'music') { %>
+    <span class="active-indicator"></span>
+    <% } %>
+</a>
+            <a href="/guilds" class="nav-link <%= currentPage === 'guilds' ? 'active-nav' : '' %>" data-tooltip="Server Management">
+                <i class="fas fa-server"></i>
+                <span>Guilds</span>
+                <span class="badge"><%= selfbot ? selfbot.guilds?.cache.size || 0 : 0 %></span>
+            </a>
+            
+            <!-- Add this in the navigation section -->
+<a href="/rpc" class="nav-link <%= currentPage === 'rpc' ? 'active-nav' : '' %>" data-tooltip="Rich Presence Configuration">
+    <i class="fas fa-discord"></i>
+    <span>Rich Presence</span>
+    <% if (currentPage === 'rpc') { %>
+    <span class="active-indicator"></span>
+    <% } %>
+</a>
+
+            <a href="/commands" class="nav-link <%= currentPage === 'commands' ? 'active-nav' : '' %>" data-tooltip="Selfbot Commands">
+                <i class="fas fa-terminal"></i>
+                <span>Selfbot Commands</span>
+                <span class="badge"><%= selfbot ? selfbot.commands?.size || 0 : 0 %></span>
+            </a>
+            
+            <a href="/slash-commands" class="nav-link <%= currentPage === 'slash-commands' ? 'active-nav' : '' %>" data-tooltip="Slash Commands">
+                <i class="fas fa-slash"></i>
+                <span>Slash Commands</span>
+                <span class="badge"><%= bot ? bot.slashCommands?.size || 0 : 0 %></span>
+            </a>
+            
+            <a href="/stats" class="nav-link <%= currentPage === 'stats' ? 'active-nav' : '' %>" data-tooltip="System Statistics">
+                <i class="fas fa-chart-line"></i>
+                <span>Statistics</span>
+                <% if (currentPage === 'stats') { %>
+                <span class="active-indicator"></span>
+                <% } %>
+            </a>
+            
+            <!-- Quick Actions Section -->
+            <div style="margin: 20px 0 10px 0;">
+                <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.3), transparent); margin-bottom: 15px;"></div>
+                <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding-left: 15px; margin-bottom: 10px;">
+                    <i class="fas fa-bolt" style="margin-right: 5px;"></i> QUICK ACTIONS
+                </p>
+                
+                <button onclick="quickAction('refresh')" class="quick-action-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh Data</span>
+                </button>
+                
+                <button onclick="quickAction('restart')" class="quick-action-btn">
+                    <i class="fas fa-power-off"></i>
+                    <span>Restart Bot</span>
+                </button>
+                
+                <button onclick="quickAction('clear')" class="quick-action-btn">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Clear Cache</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Fixed Footer Section -->
+    <div style="padding: 15px 20px 25px 20px; border-top: 1px solid rgba(0, 255, 136, 0.2);">
+        <a href="/logout" class="nav-link" style="color: #ff6b6b; margin-bottom: 10px;" data-tooltip="Sign Out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 10px;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="display: inline-block; width: 6px; height: 6px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88;"></span>
+                <span style="color: rgba(255,255,255,0.4); font-size: 10px;">System Online</span>
+            </div>
+            <span style="color: rgba(255,255,255,0.2); font-size: 9px;">v2.0.0</span>
+        </div>
+    </div>
+</div>
+
+<!-- Scrollbar Styles -->
+<style>
+    .sidebar-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #00ff88 rgba(0, 255, 136, 0.1);
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-track {
+        background: rgba(0, 255, 136, 0.05);
+        border-radius: 10px;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+        background: #00ff88;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #00ff88;
+    }
+    
+    .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+        background: #00cc66;
+    }
+    
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 15px;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        border-radius: 12px;
+        transition: all 0.3s;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+        font-size: 14px;
+    }
+    
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(0, 255, 136, 0.1);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.5s, height 0.5s;
+        z-index: -1;
+    }
+    
+    .nav-link:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .nav-link:hover {
+        color: #00ff88;
+        transform: translateX(5px);
+    }
+    
+    .active-nav {
+        background: linear-gradient(90deg, rgba(0,255,136,0.15) 0%, rgba(0,255,136,0) 100%);
+        color: #00ff88 !important;
+        border-left: 3px solid #00ff88;
+    }
+    
+    .nav-link i {
+        width: 20px;
+        font-size: 16px;
+        text-align: center;
+    }
+    
+    .badge {
+        margin-left: auto;
+        background: rgba(0,255,136,0.15);
+        color: #00ff88;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid rgba(0,255,136,0.3);
+    }
+    
+    .active-indicator {
+        margin-left: auto;
+        width: 8px;
+        height: 8px;
+        background: #00ff88;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #00ff88;
+    }
+    
+    .quick-action-btn {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(0,255,136,0.15);
+        color: #fff;
+        padding: 10px 15px;
+        border-radius: 10px;
+        width: 100%;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 13px;
+    }
+    
+    .quick-action-btn:hover {
+        background: rgba(0,255,136,0.1);
+        border-color: #00ff88;
+        transform: scale(1.02);
+        color: #00ff88;
+    }
+    
+    .quick-action-btn i {
+        width: 20px;
+        font-size: 14px;
+    }
+    
+    /* Tooltip */
+    [data-tooltip] {
+        position: relative;
+    }
+    
+    [data-tooltip]:before {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.9);
+        color: #00ff88;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        margin-left: 10px;
+        border: 1px solid #00ff88;
+        z-index: 1000;
+        pointer-events: none;
+        font-weight: 400;
+    }
+    
+    [data-tooltip]:hover:before {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(45deg); }
+        50% { transform: translateY(-5px) rotate(45deg); }
+        100% { transform: translateY(0px) rotate(45deg); }
+    }
+</style>
+
+<script>
+function quickAction(action) {
+    switch(action) {
+        case 'refresh':
+            location.reload();
+            break;
+        case 'restart':
+            if(confirm('Restart bot? This may take a few seconds.')) {
+                alert('Restart feature coming soon!');
+            }
+            break;
+        case 'clear':
+            if(confirm('Clear cache?')) {
+                alert('Cache cleared!');
+            }
+            break;
+    }
+}
+</script>
+
+<!-- Main Content Area -->
+<div style="margin-left: 320px; width: calc(100% - 320px); min-height: 100vh; padding: 30px;">

@@ -1,0 +1,1094 @@
+<!-- dashboard/views/music.ejs - Only play/pause controls -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'music', allowedUsers: allowedUsers }) %>
+
+<style>
+    /* Fix for dropdown text visibility */
+    .futuristic-input, .futuristic-input option {
+        background-color: #1a1a2e;
+        color: white;
+        padding: 12px 18px;
+        border: 2px solid rgba(0, 255, 136, 0.3);
+        border-radius: 12px;
+        font-size: 16px;
+        width: 100%;
+    }
+    
+    .futuristic-input option {
+        background-color: #16213e;
+        color: white;
+        padding: 10px;
+    }
+    
+    .futuristic-input:focus {
+        outline: none;
+        border-color: #00ff88;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+    
+    /* Music player styles */
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        border: 2px solid #00ff88;
+        color: #00ff88;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .control-btn:hover {
+        background: #00ff88;
+        color: #000;
+        transform: scale(1.1);
+        box-shadow: 0 0 20px #00ff88;
+    }
+    
+    .control-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .control-btn:disabled:hover {
+        background: rgba(255,255,255,0.1);
+        color: #00ff88;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    #volumeSlider {
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, #00ff88, #00ccff);
+        border-radius: 3px;
+        -webkit-appearance: none;
+    }
+    
+    #volumeSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #00ff88;
+        cursor: pointer;
+        box-shadow: 0 0 10px #00ff88;
+    }
+    
+    .search-result-item {
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s;
+        border: 1px solid rgba(0,255,136,0.1);
+    }
+    
+    .search-result-item:hover {
+        background: rgba(0,255,136,0.1);
+        transform: translateX(5px);
+        border-color: #00ff88;
+    }
+    
+    .queue-item {
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(0,255,136,0.1);
+    }
+    
+    .queue-item:hover {
+        background: rgba(0,255,136,0.1);
+        border-color: #00ff88;
+    }
+    
+    .queue-item .track-info {
+        flex: 1;
+    }
+    
+    .queue-item .track-title {
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+    
+    .queue-item .track-meta {
+        font-size: 12px;
+        color: rgba(255,255,255,0.5);
+    }
+    
+    .remove-btn {
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+    
+    .remove-btn:hover {
+        background: rgba(255,107,107,0.2);
+        transform: scale(1.1);
+    }
+    
+    #progressBar {
+        cursor: pointer;
+        position: relative;
+        height: 8px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    #progressBar:hover::after {
+        content: 'Click to seek';
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: #00ff88;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 10;
+    }
+    
+    #progressFill {
+        height: 100%;
+        background: linear-gradient(90deg, #00ff88, #00ccff);
+        border-radius: 4px;
+        transition: width 0.1s linear;
+    }
+    
+    .now-playing-art {
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 30px rgba(0,255,136,0.3);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    
+    .thumbnail-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        object-fit: cover;
+    }
+    
+    .default-thumbnail {
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .server-indicator {
+        display: inline-block;
+        padding: 4px 8px;
+        background: rgba(0,255,136,0.1);
+        border-radius: 12px;
+        font-size: 12px;
+        color: #00ff88;
+        margin-left: 10px;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(0,255,136,0.3);
+        border-top-color: #00ff88;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .track-info-loading {
+        text-align: center;
+        padding: 20px;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+</style>
+
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="font-size: 36px; font-weight: 800;">
+            <span class="gradient-text">Music Player</span>
+        </h1>
+        <div class="glass-morphism" style="padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-headphones-alt" style="color: #00ff88;"></i>
+            <span>DAVE Protocol • Lavalink v4</span>
+            <span id="activeServerIndicator" class="server-indicator" style="display: none;"></span>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 25px;">
+        <!-- Server and Voice Channel Selection -->
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-server" style="color: #00ff88;"></i>
+                Connect to Voice
+            </h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8);">Select Server</label>
+                <select id="guildSelect" class="futuristic-input" onchange="handleGuildChange()">
+                    <option value="">Choose a server...</option>
+                    <% guilds.forEach(guild => { %>
+                    <option value="<%= guild.id %>"><%= guild.name %> (<%= guild.memberCount %> members)</option>
+                    <% }) %>
+                </select>
+            </div>
+            
+            <div id="voiceChannelContainer" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 10px; color: rgba(255,255,255,0.8);">Select Voice Channel</label>
+                    <select id="voiceChannelSelect" class="futuristic-input">
+                        <option value="">Loading channels...</option>
+                    </select>
+                </div>
+                
+                <button class="neon-btn" style="width: 100%;" onclick="joinVoiceChannel()" id="joinBtn">
+                    <i class="fas fa-sign-in-alt"></i> Join Voice Channel
+                </button>
+            </div>
+
+            <div id="connectionStatus" style="margin-top: 15px; padding: 10px; border-radius: 10px; display: none;"></div>
+        </div>
+
+        <!-- Current Connection Info -->
+        <div class="modern-card" id="connectionInfo" style="display: none;">
+            <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-plug" style="color: #00ff88;"></i>
+                Active Connection
+            </h3>
+            
+            <div style="margin-bottom: 10px;">
+                <i class="fas fa-server"></i> Server: <span id="serverName" style="color: #00ff88;">-</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <i class="fas fa-volume-up"></i> Channel: <span id="channelName" style="color: #00ff88;">-</span>
+            </div>
+            <div style="margin-bottom: 15px;" id="voiceStats">
+                <i class="fas fa-signal"></i> Status: <span id="connectionQuality">Connected</span>
+            </div>
+            
+            <button class="neon-btn" style="width: 100%; background: transparent; border-color: #ff6b6b; color: #ff6b6b;" onclick="disconnectVoice()">
+                <i class="fas fa-power-off"></i> Disconnect
+            </button>
+        </div>
+    </div>
+
+    <!-- Music Player -->
+    <div class="modern-card" id="musicPlayer" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-music" style="color: #00ff88;"></i>
+                Now Playing
+            </h3>
+            <span id="loopMode" class="badge" style="background: rgba(0,255,136,0.1); padding: 5px 15px; border-radius: 20px;">Loop: off</span>
+        </div>
+
+        <!-- Track Info with Thumbnail -->
+        <div id="nowPlaying" style="text-align: center; margin-bottom: 20px;">
+            <div id="thumbnailContainer" class="now-playing-art">
+                <div class="default-thumbnail">
+                    <i class="fas fa-music" style="font-size: 50px; color: #000;"></i>
+                </div>
+            </div>
+            <h4 id="trackTitle" style="font-size: 20px; margin-bottom: 5px;">No track playing</h4>
+            <p id="trackArtist" style="color: rgba(255,255,255,0.6); font-size: 16px;"></p>
+            <p id="trackRequester" style="color: rgba(255,255,255,0.4); font-size: 13px;"></p>
+            <p id="trackDuration" style="color: #00ff88; font-size: 14px; margin-top: 5px;"></p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div id="progressContainer" style="margin-bottom: 20px;">
+            <div id="progressBar" onclick="seekFromProgress(event)">
+                <div id="progressFill"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+        </div>
+
+        <!-- Controls - Only Play/Pause and Stop -->
+        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;">
+            <button class="control-btn" onclick="togglePlayPause()" id="playPauseBtn" title="Play/Pause">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="control-btn" onclick="stopTrack()" id="stopBtn" title="Stop">
+                <i class="fas fa-stop"></i>
+            </button>
+        </div>
+
+        <!-- Volume Control -->
+        <div style="margin-bottom: 25px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-volume-up" style="color: #00ff88;"></i>
+                <span>Volume (<span id="volumeValue">100</span>%)</span>
+            </div>
+            <input type="range" id="volumeSlider" min="0" max="1000" value="100" oninput="updateVolumeLabel(this.value)" onchange="setVolume(this.value)">
+        </div>
+
+        <!-- Loop Controls Removed -->
+    </div>
+
+    <!-- Search and Add -->
+    <div class="modern-card" style="margin-top: 25px; display: none;" id="searchSection">
+        <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-search" style="color: #00ff88;"></i>
+            Add Music
+        </h3>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="text" id="searchQuery" class="futuristic-input" placeholder="Search YouTube, Spotify, or SoundCloud..." onkeypress="if(event.key==='Enter') searchMusic()">
+            <button class="neon-btn" onclick="searchMusic()" style="white-space: nowrap; padding: 12px 25px;">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+        
+        <div id="searchResults" style="margin-top: 20px; display: grid; gap: 10px; max-height: 400px; overflow-y: auto;" class="sidebar-scroll"></div>
+    </div>
+
+    <!-- Queue -->
+    <div class="modern-card" style="margin-top: 25px; display: none;" id="queueSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-list"></i>
+                Queue
+            </h3>
+            <div style="display: flex; gap: 10px;">
+                <span id="queueCount" class="badge" style="padding: 5px 15px; border-radius: 20px;">0 songs</span>
+                <button class="neon-btn" style="padding: 5px 15px;" onclick="shuffleQueue()" title="Shuffle">
+                    <i class="fas fa-random"></i>
+                </button>
+                <button class="neon-btn" style="padding: 5px 15px;" onclick="clearQueue()" title="Clear Queue">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="queueList" style="max-height: 400px; overflow-y: auto; padding-right: 5px;" class="sidebar-scroll">
+            <p style="color: rgba(255,255,255,0.3); text-align: center; padding: 20px;">No songs in queue</p>
+        </div>
+        
+        <div id="queueStats" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: none;">
+            <div style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.6);">
+                <span>Total Songs: <span id="totalSongs">0</span></span>
+                <span>Total Duration: <span id="totalDuration">0:00</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== STATE MANAGEMENT ====================
+let state = {
+    guildId: null,
+    channelId: null,
+    guildName: null,
+    channelName: null,
+    currentTrack: null,
+    currentTrackId: null,
+    position: 0,
+    paused: false,
+    volume: 100,
+    loop: 'off',
+    queue: [],
+    queueLength: 0
+};
+
+let isControlAction = false;
+let updateInterval = null;
+let trackEndInterval = null;
+let voiceChannels = [];
+
+// ==================== UTILITY FUNCTIONS ====================
+function formatTime(ms) {
+    if (!ms || ms < 0) return '0:00';
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const remainingSeconds = seconds % 60;
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+        return `${hours}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${remainingMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function saveState() {
+    sessionStorage.setItem('musicState', JSON.stringify(state));
+}
+
+function loadState() {
+    const saved = sessionStorage.getItem('musicState');
+    if (saved) {
+        try {
+            const loaded = JSON.parse(saved);
+            state = { ...state, ...loaded };
+            
+            if (state.guildId) {
+                document.getElementById('guildSelect').value = state.guildId;
+                setTimeout(() => {
+                    loadVoiceChannels().then(() => {
+                        if (state.channelId) {
+                            document.getElementById('voiceChannelSelect').value = state.channelId;
+                            showConnectionInfo();
+                            startMusicPlayer();
+                            if (state.currentTrack) {
+                                updateUIDisplay();
+                            }
+                        }
+                    });
+                }, 500);
+            }
+        } catch (e) {
+            console.error('Failed to load state:', e);
+        }
+    }
+}
+
+// ==================== UI UPDATE FUNCTIONS ====================
+function updateUIDisplay() {
+    if (state.currentTrack) {
+        // Update track info
+        document.getElementById('trackTitle').textContent = state.currentTrack.info.title;
+        document.getElementById('trackArtist').textContent = state.currentTrack.info.author || 'Unknown Artist';
+        document.getElementById('trackRequester').textContent = `Requested by: ${state.currentTrack.requester}`;
+        document.getElementById('trackDuration').textContent = formatTime(state.currentTrack.info.length);
+        
+        // Update thumbnail
+        if (state.currentTrack.info.artworkUrl) {
+            document.getElementById('thumbnailContainer').innerHTML = `<img src="${state.currentTrack.info.artworkUrl}" class="thumbnail-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'default-thumbnail\\'><i class=\\'fas fa-music\\' style=\\'font-size: 50px; color: #000;\\'></i></div>';">`;
+        } else {
+            document.getElementById('thumbnailContainer').innerHTML = '<div class="default-thumbnail"><i class="fas fa-music" style="font-size: 50px; color: #000;"></i></div>';
+        }
+        
+        // Update progress
+        const progress = (state.position / state.currentTrack.info.length) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('currentTime').textContent = formatTime(state.position);
+        document.getElementById('totalTime').textContent = formatTime(state.currentTrack.info.length);
+        
+        // Update play/pause button
+        if (state.paused) {
+            document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+        } else {
+            document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+        }
+    } else {
+        // No track playing
+        document.getElementById('trackTitle').textContent = 'No track playing';
+        document.getElementById('trackArtist').textContent = '';
+        document.getElementById('trackRequester').textContent = '';
+        document.getElementById('trackDuration').textContent = '';
+        document.getElementById('thumbnailContainer').innerHTML = '<div class="default-thumbnail"><i class="fas fa-music" style="font-size: 50px; color: #000;"></i></div>';
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('currentTime').textContent = '0:00';
+        document.getElementById('totalTime').textContent = '0:00';
+        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+    }
+    
+    // Update volume
+    document.getElementById('volumeSlider').value = state.volume;
+    document.getElementById('volumeValue').textContent = state.volume;
+    
+    // Update loop mode
+    document.getElementById('loopMode').textContent = 'Loop: ' + state.loop;
+    
+    // Update queue
+    updateQueueDisplay();
+}
+
+function updateQueueDisplay() {
+    document.getElementById('queueCount').textContent = state.queueLength + ' songs';
+    
+    if (state.queue && state.queue.length > 0) {
+        let queueHtml = '';
+        let totalDuration = 0;
+        
+        state.queue.forEach((song, index) => {
+            totalDuration += song.info.length;
+            queueHtml += `
+                <div class="queue-item">
+                    <div class="track-info">
+                        <div class="track-title">${index + 1}. ${song.info.title}</div>
+                        <div class="track-meta">${song.info.author} • ${formatTime(song.info.length)} • Requested by: ${song.requester}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFromQueue(${index})" title="Remove from queue">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+        });
+        
+        document.getElementById('queueList').innerHTML = queueHtml;
+        document.getElementById('queueStats').style.display = 'flex';
+        document.getElementById('totalSongs').textContent = state.queue.length;
+        document.getElementById('totalDuration').textContent = formatTime(totalDuration);
+    } else {
+        document.getElementById('queueList').innerHTML = '<p style="color: rgba(255,255,255,0.3); text-align: center; padding: 20px;">No songs in queue</p>';
+        document.getElementById('queueStats').style.display = 'none';
+    }
+}
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    checkExistingConnection();
+});
+
+async function checkExistingConnection() {
+    try {
+        const guildSelect = document.getElementById('guildSelect');
+        
+        for (let i = 1; i < guildSelect.options.length; i++) {
+            const guildId = guildSelect.options[i].value;
+            const response = await fetch(`/api/music/status/${guildId}`);
+            const data = await response.json();
+            
+            if (data.active) {
+                state.guildId = guildId;
+                state.guildName = guildSelect.options[i].text.split(' (')[0];
+                guildSelect.value = guildId;
+                
+                await loadVoiceChannels();
+                
+                // Get channel from voice data
+                const voiceData = window.selfbot?.voiceData?.get(guildId);
+                if (voiceData?.stateUpdate) {
+                    state.channelId = voiceData.stateUpdate.channel_id;
+                    const channelSelect = document.getElementById('voiceChannelSelect');
+                    for (let opt of channelSelect.options) {
+                        if (opt.value === state.channelId) {
+                            state.channelName = opt.text.split(' (')[0];
+                            channelSelect.value = state.channelId;
+                            break;
+                        }
+                    }
+                }
+                
+                showConnectionInfo();
+                startMusicPlayer();
+                
+                // Update with current data
+                if (data.nowPlaying) {
+                    state.currentTrack = data.nowPlaying;
+                    state.currentTrackId = data.nowPlaying.info.uri;
+                    state.position = data.position || 0;
+                    state.paused = data.paused || false;
+                    state.volume = data.volume || 100;
+                    state.loop = data.loop || 'off';
+                    state.queue = data.queue || [];
+                    state.queueLength = data.queueLength || 0;
+                    updateUIDisplay();
+                    saveState();
+                }
+                
+                break;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to check existing connections:', error);
+    }
+}
+
+// ==================== VOICE CHANNEL MANAGEMENT ====================
+async function loadVoiceChannels() {
+    const guildId = document.getElementById('guildSelect').value;
+    if (!guildId) return;
+    
+    state.guildId = guildId;
+    state.guildName = document.getElementById('guildSelect').options[document.getElementById('guildSelect').selectedIndex].text.split(' (')[0];
+    document.getElementById('voiceChannelContainer').style.display = 'block';
+    document.getElementById('voiceChannelSelect').innerHTML = '<option value="">Loading channels...</option>';
+    
+    try {
+        const response = await fetch(`/api/music/voice-channels/${guildId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            voiceChannels = data.channels;
+            const select = document.getElementById('voiceChannelSelect');
+            select.innerHTML = '<option value="">Select a voice channel...</option>';
+            
+            voiceChannels.forEach(channel => {
+                const option = document.createElement('option');
+                option.value = channel.id;
+                option.textContent = `${channel.name} (${channel.userCount} users)`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load voice channels:', error);
+    }
+}
+
+async function handleGuildChange() {
+    await loadVoiceChannels();
+    saveState();
+}
+
+async function joinVoiceChannel() {
+    const channelId = document.getElementById('voiceChannelSelect').value;
+    if (!state.guildId || !channelId) {
+        showNotification('Please select a voice channel', 'error');
+        return;
+    }
+    
+    state.channelId = channelId;
+    state.channelName = document.getElementById('voiceChannelSelect').options[document.getElementById('voiceChannelSelect').selectedIndex].text.split(' (')[0];
+    
+    const joinBtn = document.getElementById('joinBtn');
+    joinBtn.innerHTML = '<span class="loading-spinner"></span> Connecting...';
+    joinBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/music/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guildId: state.guildId, channelId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showConnectionInfo();
+            startMusicPlayer();
+            saveState();
+            showNotification('Connected to voice channel', 'success');
+        } else {
+            showNotification('Failed to connect: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showNotification('Connection failed', 'error');
+    } finally {
+        joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Join Voice Channel';
+        joinBtn.disabled = false;
+    }
+}
+
+function showConnectionInfo() {
+    document.getElementById('serverName').textContent = state.guildName || 'Unknown';
+    document.getElementById('channelName').textContent = state.channelName || 'Unknown';
+    document.getElementById('connectionInfo').style.display = 'block';
+    document.getElementById('activeServerIndicator').style.display = 'inline-block';
+    document.getElementById('activeServerIndicator').textContent = ` Playing in ${state.guildName || 'server'}`;
+}
+
+// ==================== MUSIC PLAYER CONTROL ====================
+function startMusicPlayer() {
+    document.getElementById('musicPlayer').style.display = 'block';
+    document.getElementById('searchSection').style.display = 'block';
+    document.getElementById('queueSection').style.display = 'block';
+    startUpdates();
+}
+
+function startUpdates() {
+    if (updateInterval) clearInterval(updateInterval);
+    if (trackEndInterval) clearInterval(trackEndInterval);
+    
+    // Regular status updates
+    updateInterval = setInterval(fetchStatus, 2000);
+    
+    // Aggressive track end detection
+    trackEndInterval = setInterval(checkTrackChange, 1000);
+}
+
+async function fetchStatus() {
+    if (!state.guildId || isControlAction) return;
+    
+    try {
+        const response = await fetch(`/api/music/status/${state.guildId}`);
+        const data = await response.json();
+        
+        if (data.active) {
+            // Update volume if changed
+            if (data.volume !== state.volume) {
+                state.volume = data.volume;
+                document.getElementById('volumeSlider').value = data.volume;
+                document.getElementById('volumeValue').textContent = data.volume;
+            }
+            
+            // Update loop mode
+            if (data.loop !== state.loop) {
+                state.loop = data.loop || 'off';
+                document.getElementById('loopMode').textContent = 'Loop: ' + state.loop;
+            }
+            
+            // Update queue if changed
+            if (JSON.stringify(data.queue) !== JSON.stringify(state.queue)) {
+                state.queue = data.queue || [];
+                state.queueLength = data.queueLength || 0;
+                updateQueueDisplay();
+            }
+        }
+    } catch (error) {
+        console.error('Status fetch error:', error);
+    }
+}
+
+async function checkTrackChange() {
+    if (!state.guildId || isControlAction) return;
+    
+    try {
+        const response = await fetch(`/api/music/status/${state.guildId}`);
+        const data = await response.json();
+        
+        if (data.active && data.nowPlaying) {
+            const newTrackId = data.nowPlaying.info.uri;
+            
+            // Track changed
+            if (newTrackId !== state.currentTrackId) {
+                console.log('Track changed from', state.currentTrackId, 'to', newTrackId);
+                
+                // Update state with new track
+                state.currentTrack = data.nowPlaying;
+                state.currentTrackId = newTrackId;
+                state.position = data.position || 0;
+                state.paused = data.paused || false;
+                state.queue = data.queue || [];
+                state.queueLength = data.queueLength || 0;
+                
+                // Update UI
+                updateUIDisplay();
+                saveState();
+            } else {
+                // Same track, just update position and pause state
+                state.position = data.position || 0;
+                
+                if (data.paused !== state.paused) {
+                    state.paused = data.paused;
+                    if (state.paused) {
+                        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+                    } else {
+                        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+                    }
+                }
+                
+                // Update progress bar
+                if (state.currentTrack) {
+                    const progress = (state.position / state.currentTrack.info.length) * 100;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                    document.getElementById('currentTime').textContent = formatTime(state.position);
+                }
+            }
+        } else if (!data.active && state.currentTrack) {
+            // Queue ended
+            console.log('Queue ended');
+            state.currentTrack = null;
+            state.currentTrackId = null;
+            state.position = 0;
+            state.paused = false;
+            state.queue = [];
+            state.queueLength = 0;
+            updateUIDisplay();
+            saveState();
+        }
+    } catch (error) {
+        console.error('Track change check error:', error);
+    }
+}
+
+// ==================== CONTROL ACTIONS ====================
+async function control(action, value = null) {
+    if (!state.guildId) return;
+    
+    isControlAction = true;
+    
+    try {
+        const response = await fetch('/api/music/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guildId: state.guildId, action, value })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            isControlAction = false;
+        } else {
+            isControlAction = false;
+            showNotification('Command failed', 'error');
+        }
+    } catch (error) {
+        console.error('Control error:', error);
+        isControlAction = false;
+        showNotification('Control failed', 'error');
+    }
+}
+
+// ==================== USER ACTIONS ====================
+function togglePlayPause() {
+    if (!state.guildId) return;
+    
+    if (state.paused) {
+        control('resume');
+        state.paused = false;
+        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i>';
+    } else {
+        control('pause');
+        state.paused = true;
+        document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+    }
+    saveState();
+}
+
+function stopTrack() {
+    control('stop');
+    state.currentTrack = null;
+    state.currentTrackId = null;
+    state.position = 0;
+    state.paused = false;
+    state.queue = [];
+    state.queueLength = 0;
+    updateUIDisplay();
+    saveState();
+}
+
+function setVolume(value) {
+    if (!state.guildId) return;
+    state.volume = parseInt(value);
+    control('volume', state.volume);
+    saveState();
+}
+
+function updateVolumeLabel(value) {
+    document.getElementById('volumeValue').textContent = value;
+}
+
+function shuffleQueue() { control('shuffle'); }
+
+async function removeFromQueue(index) {
+    if (!state.guildId) return;
+    
+    try {
+        await fetch('/api/music/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guildId: state.guildId, action: 'remove', value: index })
+        });
+        
+        // Update local state
+        if (state.queue && state.queue.length > index) {
+            state.queue.splice(index, 1);
+            state.queueLength = state.queue.length;
+            updateQueueDisplay();
+        }
+        
+        showNotification('Removed from queue', 'success');
+    } catch (error) {
+        showNotification('Failed to remove', 'error');
+    }
+}
+
+async function clearQueue() {
+    if (!state.guildId) return;
+    if (!confirm('Clear the entire queue?')) return;
+    
+    try {
+        // Clear local queue
+        state.queue = [];
+        state.queueLength = 0;
+        updateQueueDisplay();
+        
+        // Send to server
+        const queue = await fetch(`/api/music/status/${state.guildId}`).then(r => r.json());
+        if (queue.queue) {
+            for (let i = queue.queue.length - 1; i >= 0; i--) {
+                await fetch('/api/music/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guildId: state.guildId, action: 'remove', value: i })
+                });
+            }
+        }
+        
+        showNotification('Queue cleared', 'success');
+    } catch (error) {
+        showNotification('Failed to clear queue', 'error');
+        // Revert on error
+        fetchStatus();
+    }
+}
+
+async function searchMusic() {
+    const query = document.getElementById('searchQuery').value.trim();
+    if (!query || !state.guildId) {
+        showNotification('Please enter a search query', 'error');
+        return;
+    }
+    
+    document.getElementById('searchResults').innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center;"><span class="loading-spinner"></span> Searching...</p>';
+    
+    try {
+        const response = await fetch(`/api/music/search/${encodeURIComponent(query)}?guildId=${state.guildId}`);
+        const data = await response.json();
+        
+        if (data.success && data.tracks?.length > 0) {
+            let resultsHtml = '';
+            data.tracks.slice(0, 8).forEach(track => {
+                resultsHtml += `
+                    <div class="search-result-item">
+                        <div style="flex: 1;">
+                            <strong>${track.info.title}</strong><br>
+                            <small>${track.info.author} • ${formatTime(track.info.length)}</small>
+                        </div>
+                        <button class="neon-btn" style="padding: 8px 20px;" onclick="addToQueue('${track.info.uri}')">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                `;
+            });
+            document.getElementById('searchResults').innerHTML = resultsHtml;
+        } else {
+            document.getElementById('searchResults').innerHTML = '<p style="color: rgba(255,255,255,0.3); text-align: center;">No results found</p>';
+        }
+    } catch (error) {
+        document.getElementById('searchResults').innerHTML = '<p style="color: #ff6b6b; text-align: center;">Search failed</p>';
+    }
+}
+
+async function addToQueue(uri) {
+    if (!state.guildId) return;
+    
+    const addBtn = event.target;
+    addBtn.innerHTML = '<span class="loading-spinner"></span>';
+    addBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/music/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guildId: state.guildId, query: uri })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Added to queue', 'success');
+            document.getElementById('searchQuery').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            setTimeout(fetchStatus, 500);
+        } else {
+            showNotification('Failed to add: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to add to queue', 'error');
+    } finally {
+        addBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
+        addBtn.disabled = false;
+    }
+}
+
+function seekFromProgress(event) {
+    if (!state.guildId || !state.currentTrack) return;
+    
+    const bar = document.getElementById('progressBar');
+    const rect = bar.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    
+    const seekTime = Math.floor(state.currentTrack.info.length * percent);
+    control('seek', seekTime);
+}
+
+async function disconnectVoice() {
+    if (!state.guildId) return;
+    
+    try {
+        await fetch('/api/music/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guildId: state.guildId, action: 'stop' })
+        });
+        
+        // Reset UI
+        document.getElementById('connectionInfo').style.display = 'none';
+        document.getElementById('musicPlayer').style.display = 'none';
+        document.getElementById('searchSection').style.display = 'none';
+        document.getElementById('queueSection').style.display = 'none';
+        document.getElementById('activeServerIndicator').style.display = 'none';
+        
+        // Clear intervals
+        if (updateInterval) clearInterval(updateInterval);
+        if (trackEndInterval) clearInterval(trackEndInterval);
+        
+        // Reset state
+        state = {
+            guildId: null,
+            channelId: null,
+            guildName: null,
+            channelName: null,
+            currentTrack: null,
+            currentTrackId: null,
+            position: 0,
+            paused: false,
+            volume: 100,
+            loop: 'off',
+            queue: [],
+            queueLength: 0
+        };
+        
+        sessionStorage.removeItem('musicState');
+        showNotification('Disconnected', 'info');
+    } catch (error) {
+        showNotification('Failed to disconnect', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const statusDiv = document.getElementById('connectionStatus');
+    statusDiv.style.display = 'block';
+    statusDiv.textContent = message;
+    
+    const colors = {
+        success: { bg: 'rgba(0,255,136,0.2)', border: '#00ff88', text: '#00ff88' },
+        error: { bg: 'rgba(255,107,107,0.2)', border: '#ff6b6b', text: '#ff6b6b' },
+        info: { bg: 'rgba(255,255,255,0.1)', border: 'rgba(255,255,255,0.2)', text: 'white' }
+    };
+    
+    const color = colors[type] || colors.info;
+    statusDiv.style.background = color.bg;
+    statusDiv.style.border = `1px solid ${color.border}`;
+    statusDiv.style.color = color.text;
+    
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 3000);
+}
+</script>
+
+<%- include('partials/footer') %>

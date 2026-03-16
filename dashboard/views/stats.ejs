@@ -1,0 +1,110 @@
+<!-- dashboard/views/stats.ejs -->
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { currentPage: 'stats' }) %>
+
+<div>
+    <h1 style="font-size: 36px; font-weight: 800; margin-bottom: 30px;">
+        <span class="gradient-text">System Statistics</span>
+    </h1>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 20px;">
+                <i class="fas fa-microchip" style="color: #00ff88; margin-right: 10px;"></i>
+                System Info
+            </h3>
+            <div style="display: grid; gap: 15px;">
+                <div>
+                    <p style="color: rgba(255,255,255,0.6);">Platform</p>
+                    <p style="font-size: 18px; font-weight: 600;"><%= platform %></p>
+                </div>
+                <div>
+                    <p style="color: rgba(255,255,255,0.6);">Node Version</p>
+                    <p style="font-size: 18px; font-weight: 600;"><%= nodeVersion %></p>
+                </div>
+                <div>
+                    <p style="color: rgba(255,255,255,0.6);">Uptime</p>
+                    <p style="font-size: 18px; font-weight: 600;">
+                        <%= Math.floor(uptime / 86400) %> days 
+                        <%= Math.floor((uptime % 86400) / 3600) %> hours
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modern-card">
+            <h3 style="font-size: 20px; margin-bottom: 20px;">
+                <i class="fas fa-memory" style="color: #00ff88; margin-right: 10px;"></i>
+                Memory Usage
+            </h3>
+            <div style="display: grid; gap: 15px;">
+                <div>
+                    <p style="color: rgba(255,255,255,0.6);">Heap Used</p>
+                    <p style="font-size: 18px; font-weight: 600;"><%= (memory.heapUsed / 1024 / 1024).toFixed(2) %> MB</p>
+                </div>
+                <div>
+                    <p style="color: rgba(255,255,255,0.6);">Heap Total</p>
+                    <p style="font-size: 18px; font-weight: 600;"><%= (memory.heapTotal / 1024 / 1024).toFixed(2) %> MB</p>
+                </div>
+                <div>
+                    <p style="color: rgba(255,255,255,0.6);">RSS</p>
+                    <p style="font-size: 18px; font-weight: 600;"><%= (memory.rss / 1024 / 1024).toFixed(2) %> MB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-card" style="margin-top: 25px;">
+        <canvas id="statsChart" style="width: 100%; height: 400px;"></canvas>
+    </div>
+</div>
+
+<script>
+const ctx = document.getElementById('statsChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['1m', '2m', '3m', '4m', '5m', '6m', '7m', '8m', '9m', '10m'],
+        datasets: [{
+            label: 'Memory Usage (MB)',
+            data: [65, 59, 80, 81, 56, 55, 40, 45, 38, 42],
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { color: '#fff' }
+            }
+        },
+        scales: {
+            y: {
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                ticks: { color: '#fff' }
+            },
+            x: {
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                ticks: { color: '#fff' }
+            }
+        }
+    }
+});
+
+// Real-time stats update
+setInterval(async () => {
+    const response = await fetch('/api/stats');
+    const stats = await response.json();
+    
+    // Update dashboard stats
+    document.querySelectorAll('.stat-value').forEach(el => {
+        // Update logic here
+    });
+}, 30000);
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,36 @@
+{
+  "prefix": "..",
+  "status": "online",
+  "activity": "//..\\\\",
+  "activityType": "STREAMING",
+  "embedColor": "#ff0000",
+  "background": "https://4kwallpapers.com/images/walls/thumbs_2t/25565.jpg",
+  "allowedUsers": [
+    "1277015383877881856"
+  ],
+  "slashEphemeral": false,
+  "selfbotResponses": false,
+  "slashEmbedStyle": "default",
+  "botStatus": "idle",
+  "botActivity": "tesrek",
+  "autoKoutube": false,
+  "rpc": {
+    "enabled": true,
+    "details": "GOONING",
+    "state": "TESREK",
+    "largeImageKey": "https://cdn.discordapp.com/app-assets/1479857615222870097/1483098417159868466.png",
+    "largeImageText": "SelfBot v3",
+    "smallImageKey": "https://cdn.discordapp.com/app-assets/383226320970055681/1359298971947896982.png",
+    "smallImageText": "Online",
+    "buttons": [],
+    "partySize": 0,
+    "partyMax": 0,
+    "joinSecret": null,
+    "matchSecret": null,
+    "spectateSecret": null,
+    "instance": false,
+    "timestamps": "none",
+    "startTime": null,
+    "endTime": null
+  }
+}
